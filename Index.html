@@ -1,0 +1,914 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>CeK Physics Readiness Assessment</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;700&display=swap">
+<style>
+/* Layout: one calm white column. Black carries text and selected states, red is kept for primary buttons and progress. */
+:root{
+  --bg:#FFFFFF; --surface:#F5F5F5; --surface-2:#E9E9E9;
+  --ink:#292929; --ink-strong:#080808; --muted:#5F5F5F;
+  --line:#E3E3E3; --line-strong:#C6C6C6;
+  --red:#E50914; --red-press:#C50712; --on-red:#FFFFFF; --red-text:#C8070F;
+  --sel-bg:#080808; --sel-fg:#FFFFFF;
+  --crit-bg:#FDE6E7; --crit-fg:#9B0610;
+  --weak-bg:#FFEAD5; --weak-fg:#8A3B00;
+  --dev-bg:#FFF3C4; --dev-fg:#6A5000;
+  --strong-bg:#DDF2E3; --strong-fg:#14602F;
+  --mast-bg:#D0EFEC; --mast-fg:#0B5C57;
+  --font-body:"Inter",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  --font-head:"Space Grotesk","Inter",system-ui,sans-serif;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#080808; --surface:#141414; --surface-2:#222222;
+    --ink:#E6E6E6; --ink-strong:#FFFFFF; --muted:#A3A3A3;
+    --line:#262626; --line-strong:#3D3D3D;
+    --red:#E50914; --red-press:#FF2A34; --on-red:#FFFFFF; --red-text:#FF5C64;
+    --sel-bg:#FFFFFF; --sel-fg:#080808;
+    --crit-bg:#3B0F12; --crit-fg:#FF9096;
+    --weak-bg:#3A2209; --weak-fg:#FFB566;
+    --dev-bg:#332B0A; --dev-fg:#F2D45F;
+    --strong-bg:#0F2C1A; --strong-fg:#74D699;
+    --mast-bg:#0B2B29; --mast-fg:#66D6CD;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#080808; --surface:#141414; --surface-2:#222222;
+  --ink:#E6E6E6; --ink-strong:#FFFFFF; --muted:#A3A3A3;
+  --line:#262626; --line-strong:#3D3D3D;
+  --red:#E50914; --red-press:#FF2A34; --on-red:#FFFFFF; --red-text:#FF5C64;
+  --sel-bg:#FFFFFF; --sel-fg:#080808;
+  --crit-bg:#3B0F12; --crit-fg:#FF9096;
+  --weak-bg:#3A2209; --weak-fg:#FFB566;
+  --dev-bg:#332B0A; --dev-fg:#F2D45F;
+  --strong-bg:#0F2C1A; --strong-fg:#74D699;
+  --mast-bg:#0B2B29; --mast-fg:#66D6CD;
+  color-scheme:dark;
+}
+
+*,*::before,*::after{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{
+  background:var(--bg);color:var(--ink);font-family:var(--font-body);font-size:16px;line-height:1.5;
+  padding-block:20px 72px;
+  padding-left:max(16px,env(safe-area-inset-left,0px));
+  padding-right:max(16px,env(safe-area-inset-right,0px));
+}
+.app{max-width:980px;margin:0 auto;display:flex;flex-direction:column;gap:20px}
+.sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.muted{color:var(--muted)}
+h1,h2,h3,h4{font-family:var(--font-head);color:var(--ink-strong);text-wrap:balance;margin:0}
+h1{font-weight:700;font-size:clamp(1.6rem,4.2vw,2.3rem);line-height:1.1}
+h2{font-weight:700;font-size:1.5rem;line-height:1.2}
+h3{font-weight:700;font-size:1.05rem;line-height:1.25}
+h4{font-weight:700;font-size:1rem}
+p{margin:0}
+.lead{margin-top:6px;color:var(--muted);max-width:65ch}
+.eyebrow{font-size:12px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+
+/* header */
+.top{display:grid;grid-template-columns:minmax(0,1fr) auto;column-gap:16px;row-gap:8px;align-items:start}
+.top .brand,.top h1,.top .sub{grid-column:1}
+.brand{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-strong)}
+.brand-mark{width:10px;height:10px;background:var(--red);display:inline-block}
+.sub{color:var(--muted)}
+.ghost{grid-column:2;grid-row:1;min-height:44px;padding:0 14px;border:1.5px solid var(--line-strong);background:var(--bg);color:var(--ink);border-radius:10px;font:500 14px var(--font-body);cursor:pointer}
+
+/* steps and progress */
+.steps{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+.step-btn{appearance:none;border:1.5px solid var(--line-strong);background:var(--bg);color:var(--ink);border-radius:10px;min-height:56px;padding:6px 10px;font:600 14px/1.2 var(--font-body);cursor:pointer;display:flex;flex-direction:column;align-items:flex-start;justify-content:center;gap:2px;text-align:left;min-width:0}
+.step-btn .n{font-size:11px;font-weight:500;color:var(--muted);letter-spacing:.06em;text-transform:uppercase}
+.step-btn[aria-current="step"]{background:var(--sel-bg);color:var(--sel-fg);border-color:var(--sel-bg)}
+.step-btn[aria-current="step"] .n{color:inherit;opacity:.75}
+.progress{height:4px;background:var(--surface-2);border-radius:2px;overflow:hidden}
+.progress>span{display:block;height:100%;width:25%;background:var(--red);transition:width .25s}
+@media (prefers-reduced-motion:reduce){.progress>span{transition:none}}
+:focus-visible{outline:3px solid var(--ink-strong);outline-offset:2px}
+
+/* panels and fields */
+.panel{display:flex;flex-direction:column;gap:22px}
+fieldset{border:0;padding:0;margin:0;min-width:0;display:flex;flex-direction:column;gap:10px}
+legend,.field>label{font-weight:600;color:var(--ink-strong);font-size:14px;padding:0}
+.field{display:flex;flex-direction:column;gap:8px}
+input[type=text],input[type=tel]{width:100%;min-height:52px;border:1.5px solid var(--line-strong);border-radius:10px;padding:10px 14px;font:inherit;background:var(--bg);color:var(--ink)}
+.note{font-size:13px;color:var(--muted)}
+
+.seg{display:flex;flex-wrap:wrap;gap:8px}
+.seg-item{position:relative}
+.seg-item input{position:absolute;inset:0;width:100%;height:100%;margin:0;opacity:0;cursor:pointer}
+.seg-item label{display:grid;place-items:center;min-width:52px;min-height:52px;padding:0 14px;border:1.5px solid var(--line-strong);border-radius:10px;background:var(--bg);color:var(--ink);font:600 17px/1 var(--font-body);font-variant-numeric:tabular-nums;user-select:none}
+.seg-item input:checked + label{background:var(--sel-bg);border-color:var(--sel-bg);color:var(--sel-fg)}
+.seg-item input:focus-visible + label{outline:3px solid var(--ink-strong);outline-offset:2px}
+.seg.sm label{min-width:46px;min-height:46px;font-size:16px}
+.seg.text label{font-size:15px;min-width:0;padding:0 18px}
+
+.targets{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px}
+.target{position:relative}
+.target input{position:absolute;inset:0;width:100%;height:100%;margin:0;opacity:0;cursor:pointer;z-index:1}
+.target label{position:relative;display:flex;flex-direction:column;gap:2px;height:100%;padding:14px 16px;border:1.5px solid var(--line-strong);border-radius:12px;background:var(--bg);min-height:104px}
+.target .pct{font:700 28px/1.1 var(--font-head);color:var(--ink-strong)}
+.target .tname{font-weight:600;color:var(--ink-strong)}
+.target .tdesc{font-size:14px;color:var(--muted)}
+.target .tmarks{font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums}
+.target input:checked + label{border-color:var(--ink-strong);background:var(--surface);box-shadow:inset 0 0 0 1.5px var(--ink-strong)}
+.target input:checked + label::after{content:"Selected";position:absolute;top:12px;right:12px;font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;background:var(--sel-bg);color:var(--sel-fg);padding:3px 8px;border-radius:6px}
+.target input:focus-visible + label{outline:3px solid var(--ink-strong);outline-offset:2px}
+
+.how{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
+.how>div{background:var(--surface);border-radius:12px;padding:14px 16px;display:flex;flex-direction:column;gap:4px}
+.how b{color:var(--ink-strong)}
+.how span{font-size:14px;color:var(--muted)}
+
+.actions{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.btn{appearance:none;border:0;border-radius:10px;min-height:52px;padding:0 22px;font:600 16px/1 var(--font-body);cursor:pointer;display:inline-flex;align-items:center;justify-content:center;text-decoration:none}
+.btn-primary{background:var(--red);color:var(--on-red)}
+.btn-primary:hover{background:var(--red-press)}
+.btn-secondary{background:var(--bg);color:var(--ink-strong);border:1.5px solid var(--line-strong)}
+
+/* self-rating */
+.legend{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:8px 16px;padding:14px 16px;background:var(--surface);border-radius:12px;font-size:14px}
+.legend div{display:flex;gap:10px;align-items:baseline}
+.legend b{display:inline-grid;place-items:center;min-width:24px;height:24px;border-radius:6px;background:var(--sel-bg);color:var(--sel-fg);font-size:13px;flex:none}
+.legend dl{margin:0}
+.counter{display:flex;flex-wrap:wrap;justify-content:space-between;gap:6px 16px;padding:12px 16px;background:var(--surface);border-radius:12px}
+.counter strong{color:var(--ink-strong);font-variant-numeric:tabular-nums}
+.stack{display:flex;flex-direction:column;gap:26px}
+.unit{display:flex;flex-direction:column;gap:6px}
+.unit-head{display:flex;flex-wrap:wrap;align-items:baseline;gap:2px 14px;padding-bottom:8px;border-bottom:2px solid var(--ink-strong)}
+.unit-head .w{font-size:14px;color:var(--muted)}
+.rate{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px 20px;align-items:center;padding:14px 0;border-bottom:1px solid var(--line)}
+.rate .name{font-weight:600;color:var(--ink-strong)}
+.rate .topics{font-size:14px;color:var(--muted)}
+.rate .pick{grid-column:1/-1;font-size:14px;color:var(--muted);min-height:1.4em}
+.rate .pick.on{color:var(--ink-strong)}
+@media (max-width:640px){.rate{grid-template-columns:minmax(0,1fr)}}
+
+/* test marks */
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,420px),1fr));gap:12px;padding-top:10px}
+.tcard{border:1.5px solid var(--line);border-radius:14px;padding:14px;display:flex;flex-direction:column;gap:14px;background:var(--bg);min-width:0}
+.tcard-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
+.tcard-head .num{font-size:12px;color:var(--muted);letter-spacing:.06em;text-transform:uppercase}
+.tcard-head .name{font-weight:600;color:var(--ink-strong)}
+.total{font:700 24px/1 var(--font-head);color:var(--ink-strong);font-variant-numeric:tabular-nums;white-space:nowrap}
+.total small{font-size:13px;color:var(--muted);font-weight:500}
+.qrow{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px 12px;align-items:center}
+.qlabel{font-size:14px;min-width:0}
+.qlabel b{color:var(--ink-strong)}
+.qlabel span{display:block;color:var(--muted);font-size:13px}
+.flags{display:flex;flex-direction:row;flex-wrap:wrap;gap:8px;align-items:center}
+.flags legend{float:left;margin-right:4px;line-height:44px}
+.flag{position:relative}
+.flag input{position:absolute;inset:0;width:100%;height:100%;margin:0;opacity:0;cursor:pointer}
+.flag label{display:inline-grid;place-items:center;min-height:44px;padding:0 14px;border:1.5px solid var(--line-strong);border-radius:999px;font-size:14px;font-weight:500;background:var(--bg);color:var(--ink);user-select:none}
+.flag input:checked + label{background:var(--crit-bg);border-color:var(--crit-fg);color:var(--crit-fg);font-weight:600}
+.flag input:focus-visible + label{outline:3px solid var(--ink-strong);outline-offset:2px}
+
+/* report */
+.card{border:1.5px solid var(--line);border-radius:14px;padding:16px;display:flex;flex-direction:column;gap:12px;min-width:0}
+.scorecard{display:grid;grid-template-columns:minmax(0,1fr);gap:14px}
+@media (min-width:760px){.scorecard{grid-template-columns:minmax(0,300px) minmax(0,1fr)}}
+.big{background:var(--sel-bg);color:var(--sel-fg);border-radius:16px;padding:20px;display:flex;flex-direction:column;gap:6px}
+.big .kicker{font-size:12px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;opacity:.75}
+.big .num{font:700 clamp(3.2rem,11vw,4.6rem)/1 var(--font-head);font-variant-numeric:tabular-nums}
+.big .of{font-size:1.4rem;opacity:.65;font-weight:500}
+.big .lvl{font-weight:600}
+.big .basis{font-size:14px;opacity:.75}
+.ladder{position:relative;padding:40px 0 46px}
+.track{position:relative;height:16px;background:var(--surface-2);border-radius:8px}
+.fill{position:absolute;left:0;top:0;bottom:0;background:var(--red);border-radius:8px}
+.tick{position:absolute;top:-4px;height:24px;width:2px;margin-left:-1px;background:var(--ink-strong)}
+.tl{position:absolute;top:26px;transform:translateX(-50%);text-align:center;font-size:12px;line-height:1.3;color:var(--muted);font-variant-numeric:tabular-nums}
+.tl b{color:var(--ink-strong);font-size:13px}
+.tl.goal b{color:var(--red-text)}
+.you{position:absolute;bottom:calc(100% + 8px);transform:translateX(-50%);background:var(--ink-strong);color:var(--bg);font-size:12px;font-weight:600;padding:3px 8px;border-radius:6px;white-space:nowrap}
+.lines{display:flex;flex-direction:column;gap:4px}
+.lines p b{color:var(--ink-strong)}
+.pathline{padding:12px 14px;border-radius:10px;background:var(--surface);color:var(--ink-strong)}
+
+.rsec{display:flex;flex-direction:column;gap:12px}
+.matrix{display:grid;grid-template-columns:minmax(64px,auto) repeat(2,minmax(0,1fr));gap:8px}
+.axis{font-size:12px;font-weight:600;color:var(--muted);display:flex;flex-direction:column;justify-content:center;line-height:1.3}
+.axis small{font-weight:400}
+.mcell{border-radius:12px;padding:12px;display:flex;flex-direction:column;gap:2px;min-height:100px;min-width:0}
+.mcell b{font-size:14px}
+.mcell .n{font:700 28px/1.1 var(--font-head);font-variant-numeric:tabular-nums}
+.mcell .l{font-size:13px;overflow-wrap:anywhere}
+.m-gap{background:var(--crit-bg);color:var(--crit-fg)}
+.m-over{background:var(--weak-bg);color:var(--weak-fg)}
+.m-hs{background:var(--mast-bg);color:var(--mast-fg)}
+.m-rel{background:var(--strong-bg);color:var(--strong-fg)}
+
+.tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:12px}
+table{border-collapse:collapse;width:100%;min-width:640px;font-size:14px}
+th{text-align:left;font-weight:600;padding:10px 12px;background:var(--surface);color:var(--ink-strong);white-space:nowrap}
+td{padding:10px 12px;border-top:1px solid var(--line);vertical-align:middle}
+td.num{font-variant-numeric:tabular-nums;white-space:nowrap}
+.pill{display:inline-block;padding:3px 10px;border-radius:999px;font-weight:600;font-size:13px;white-space:nowrap;font-variant-numeric:tabular-nums}
+.s-crit{background:var(--crit-bg);color:var(--crit-fg)}
+.s-weak{background:var(--weak-bg);color:var(--weak-fg)}
+.s-dev{background:var(--dev-bg);color:var(--dev-fg)}
+.s-strong{background:var(--strong-bg);color:var(--strong-fg)}
+.s-mast{background:var(--mast-bg);color:var(--mast-fg)}
+
+.dim{display:grid;grid-template-columns:110px minmax(0,1fr) 90px;gap:10px;align-items:center;font-size:14px}
+.bar{height:12px;background:var(--surface-2);border-radius:6px;overflow:hidden}
+.bar>span{display:block;height:100%;background:var(--ink-strong);border-radius:6px}
+.dim .cnt{color:var(--muted);font-variant-numeric:tabular-nums}
+
+.tier{display:flex;flex-direction:column}
+.tier h4{padding-bottom:6px;border-bottom:2px solid var(--ink-strong)}
+.prio{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:6px 16px;padding:12px 0;border-bottom:1px solid var(--line);align-items:center}
+.pname{display:flex;flex-wrap:wrap;gap:4px 10px;align-items:center;color:var(--ink-strong)}
+.focus{font-size:14px;color:var(--muted)}
+.meta{display:flex;flex-wrap:wrap;gap:8px 12px;align-items:center;justify-content:flex-end;font-size:14px;color:var(--muted)}
+select{min-height:44px;border:1.5px solid var(--line-strong);border-radius:10px;background:var(--bg);color:var(--ink);font:inherit;font-size:14px;padding:0 10px}
+@media (max-width:640px){.prio{grid-template-columns:minmax(0,1fr)}.meta{justify-content:flex-start}.dim{grid-template-columns:90px minmax(0,1fr) 70px}}
+.tiertext{padding-top:10px;font-size:14px;color:var(--muted)}
+.tiertext b{color:var(--ink-strong)}
+
+.phase{border:1.5px solid var(--ink-strong);border-radius:14px;padding:16px;display:flex;flex-direction:column;gap:10px}
+.phase ul{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:4px}
+.empty{border:1.5px dashed var(--line-strong);border-radius:14px;padding:24px;display:flex;flex-direction:column;gap:12px;align-items:flex-start}
+
+#copybox{gap:10px}
+#copybox label{font-weight:600;color:var(--ink-strong);font-size:14px}
+textarea{width:100%;border:1.5px solid var(--line-strong);border-radius:10px;padding:12px;font:14px/1.5 ui-monospace,Menlo,Consolas,monospace;background:var(--bg);color:var(--ink)}
+
+#toast-wrap{position:fixed;left:0;right:0;bottom:0;display:flex;justify-content:center;pointer-events:none;z-index:20;
+  padding:0 max(16px,env(safe-area-inset-right,0px)) calc(16px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px))}
+.toast{background:var(--ink-strong);color:var(--bg);padding:12px 18px;border-radius:10px;font-weight:500;box-shadow:0 6px 20px rgba(0,0,0,.25)}
+body{margin:0}
+</style>
+</head>
+<body>
+
+<div class="app" id="app">
+  <header class="top">
+    <div class="brand"><span class="brand-mark" aria-hidden="true"></span>CeK Classes</div>
+    <h1>Physics Readiness Assessment</h1>
+    <p class="sub">Class 12 · 14 chapters · 70-mark theory paper</p>
+    <button type="button" class="ghost" id="reset-btn">New student</button>
+  </header>
+
+  <nav class="steps" aria-label="Steps">
+    <button type="button" class="step-btn" data-go="0"><span class="n">Step 1</span>Student</button>
+    <button type="button" class="step-btn" data-go="1"><span class="n">Step 2</span>Self-rating</button>
+    <button type="button" class="step-btn" data-go="2"><span class="n">Step 3</span>Test marks</button>
+    <button type="button" class="step-btn" data-go="3"><span class="n">Step 4</span>Report</button>
+  </nav>
+  <div class="progress" aria-hidden="true"><span id="progress-fill"></span></div>
+
+  <main>
+    <section id="step-0" class="panel" aria-labelledby="h-0">
+      <div>
+        <h2 id="h-0">Student details</h2>
+        <p class="lead">Start here. The goal you pick sets what the report measures against.</p>
+      </div>
+      <div class="field">
+        <label for="student-name">Student name</label>
+        <input type="text" id="student-name" autocomplete="off" placeholder="Full name">
+      </div>
+      <div class="field">
+        <label for="student-phone">WhatsApp number</label>
+        <input type="tel" id="student-phone" autocomplete="off" inputmode="tel" placeholder="10-digit number">
+        <p class="note">Used only to tell students apart in the sheet.</p>
+      </div>
+      <fieldset>
+        <legend>Board</legend>
+        <div class="seg text" role="radiogroup" aria-label="Board">
+          <span class="seg-item"><input type="radio" name="board" id="board-cbse" value="CBSE" data-kind="board"><label for="board-cbse">CBSE</label></span>
+          <span class="seg-item"><input type="radio" name="board" id="board-icse" value="ICSE" data-kind="board"><label for="board-icse">ICSE</label></span>
+          <span class="seg-item"><input type="radio" name="board" id="board-other" value="State or other" data-kind="board"><label for="board-other">State or other board</label></span>
+        </div>
+      </fieldset>
+      <fieldset>
+        <legend>Where do you want to reach?</legend>
+        <div class="targets" role="radiogroup" aria-label="Target">
+          <div class="target"><input type="radio" name="target" id="target-40" value="40" data-kind="target"><label for="target-40"><span class="pct">40%</span><span class="tname">Survival</span><span class="tdesc">Secure basic marks</span><span class="tmarks">28 of 70</span></label></div>
+          <div class="target"><input type="radio" name="target" id="target-50" value="50" data-kind="target"><label for="target-50"><span class="pct">50%</span><span class="tname">Improvement</span><span class="tdesc">Build consistency</span><span class="tmarks">35 of 70</span></label></div>
+          <div class="target"><input type="radio" name="target" id="target-80" value="80" data-kind="target"><label for="target-80"><span class="pct">80%+</span><span class="tname">Excellence</span><span class="tdesc">Strong application</span><span class="tmarks">56 of 70</span></label></div>
+        </div>
+        <p class="note">Targets are for the 70-mark theory paper. The 30 practical marks are separate.</p>
+      </fieldset>
+      <div class="how">
+        <div><b>Part A · Self-rating</b><span>The student rates each chapter from 0 to 4. About 5 minutes.</span></div>
+        <div><b>Part B · Chapter tests</b><span>14 tests of 5 marks, no notes, videos or help. The teacher enters the marks.</span></div>
+        <div><b>Report</b><span>Confidence against marks, what to repair first, and the next target.</span></div>
+      </div>
+      <div class="actions"><button type="button" class="btn btn-primary" data-go="1">Start self-rating</button></div>
+    </section>
+
+    <section id="step-1" class="panel" hidden aria-labelledby="h-1">
+      <div>
+        <h2 id="h-1">Part A · Self-rating</h2>
+        <p class="lead">Rate how well you can handle each chapter today. Be honest. The test later shows where your rating and your marks agree and where they do not.</p>
+      </div>
+      <div class="legend" aria-label="Rating scale">
+        <div><b>0</b><span>I don’t know this chapter</span></div>
+        <div><b>1</b><span>I have heard of the concepts</span></div>
+        <div><b>2</b><span>I understand some concepts</span></div>
+        <div><b>3</b><span>I can solve basic questions</span></div>
+        <div><b>4</b><span>I can solve most board-level questions</span></div>
+      </div>
+      <div class="counter"><strong id="rated-count">0 of 14 rated</strong><span id="rated-avg" class="muted"></span></div>
+      <div id="rate-list" class="stack"></div>
+      <div class="actions">
+        <button type="button" class="btn btn-primary" data-go="2">Next: chapter tests</button>
+        <button type="button" class="btn btn-secondary" id="copy-self">Copy my self-rating</button>
+        <a class="btn btn-secondary" id="wa-self" href="https://wa.me/" target="_blank" rel="noopener">Send on WhatsApp</a>
+      </div>
+    </section>
+
+    <section id="step-2" class="panel" hidden aria-labelledby="h-2">
+      <div>
+        <h2 id="h-2">Part B · Chapter tests</h2>
+        <p class="lead">For the teacher. Enter the marks from each 5-mark chapter test. The student works without notes, videos or help from anyone.</p>
+      </div>
+      <div class="legend" aria-label="Where marks are lost">
+        <div><b>C</b><span>Concept: understands the physics</span></div>
+        <div><b>F</b><span>Formula: recalls and picks the right one</span></div>
+        <div><b>A</b><span>Application: uses it in a question</span></div>
+        <div><b>P</b><span>Presentation: diagram, steps and units</span></div>
+      </div>
+      <div class="counter"><strong id="tested-count">0 of 14 chapters marked</strong><span id="tested-sum" class="muted"></span></div>
+      <div id="test-list" class="stack"></div>
+      <div class="actions">
+        <button type="button" class="btn btn-primary" data-go="3">See the report</button>
+        <button type="button" class="btn btn-secondary" data-go="1">Back to self-rating</button>
+      </div>
+    </section>
+
+    <section id="step-3" class="panel" hidden aria-labelledby="h-3">
+      <h2 id="h-3">Readiness report</h2>
+      <div id="report" class="panel"></div>
+      <div class="actions">
+        <button type="button" class="btn btn-primary" id="save-report">Save to CeK sheet</button>
+        <button type="button" class="btn btn-secondary" id="copy-report">Copy report</button>
+        <a class="btn btn-secondary" id="wa-report" href="https://wa.me/" target="_blank" rel="noopener">Send on WhatsApp</a>
+        <button type="button" class="btn btn-secondary" data-go="2">Edit test marks</button>
+      </div>
+      <p id="save-status" class="note" role="status" aria-live="polite"></p>
+    </section>
+  </main>
+
+  <div id="copybox" class="card" hidden>
+    <label for="copy-text">Select all, copy, then paste into WhatsApp</label>
+    <textarea id="copy-text" readonly rows="10"></textarea>
+    <div class="actions"><button type="button" class="btn btn-secondary" id="copy-close">Close</button></div>
+  </div>
+</div>
+<div id="toast-wrap" hidden><div id="toast" class="toast" role="status"></div></div>
+
+<script>
+(function(){
+'use strict';
+
+/* SETTINGS: paste your Apps Script web app URL and the same key you set in Code.gs */
+const CONFIG = {
+  SCRIPT_URL: 'PASTE_WEB_APP_URL_HERE',
+  KEY: 'change-this-key'
+};
+
+const $ = (s, r) => (r || document).querySelector(s);
+const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const fmt = x => String(Math.round(x * 10) / 10);
+const today = () => { try { return new Date().toLocaleDateString('en-IN', {day:'numeric', month:'short', year:'numeric'}); } catch (e) { return ''; } };
+
+const UNITS = [
+  {name:'Electrostatics and Current Electricity', chapters:'1–3',  marks:16, count:3},
+  {name:'Magnetism, EMI and AC',                  chapters:'4–7',  marks:17, count:4},
+  {name:'EM Waves and Optics',                    chapters:'8–10', marks:18, count:3},
+  {name:'Dual Nature, Atoms and Nuclei',          chapters:'11–13',marks:12, count:3},
+  {name:'Electronic Devices',                     chapters:'14',   marks:7,  count:1}
+];
+const CHAPTERS = [
+  {n:1,  unit:0, effort:2, name:'Electric Charges and Fields',           topics:'Coulomb’s law, superposition, electric field, dipole, Gauss’s law'},
+  {n:2,  unit:0, effort:2, name:'Electrostatic Potential and Capacitance',topics:'Potential, equipotential surfaces, capacitors, combinations, dielectric'},
+  {n:3,  unit:0, effort:3, name:'Current Electricity',                    topics:'Ohm’s law, resistance, resistivity, drift velocity, Kirchhoff’s laws'},
+  {n:4,  unit:1, effort:3, name:'Moving Charges and Magnetism',           topics:'Lorentz force, motion in a magnetic field, Biot–Savart law, Ampere’s law'},
+  {n:5,  unit:1, effort:1, name:'Magnetism and Matter',                   topics:'Bar magnet, field lines, dia-, para- and ferromagnetic materials'},
+  {n:6,  unit:1, effort:2, name:'Electromagnetic Induction',              topics:'Faraday’s law, Lenz’s law, magnetic flux, induced EMF'},
+  {n:7,  unit:1, effort:3, name:'Alternating Current',                    topics:'RMS values, reactance, impedance, LCR circuits, transformer'},
+  {n:8,  unit:2, effort:1, name:'Electromagnetic Waves',                  topics:'Properties, spectrum, applications, displacement current'},
+  {n:9,  unit:2, effort:3, name:'Ray Optics and Optical Instruments',     topics:'Mirrors, lenses, lens-maker formula, refraction, total internal reflection, instruments'},
+  {n:10, unit:2, effort:2, name:'Wave Optics',                            topics:'Huygens’ principle, interference, YDSE, fringe width'},
+  {n:11, unit:3, effort:2, name:'Dual Nature of Radiation and Matter',    topics:'Photoelectric effect, graphs, Einstein’s equation, de Broglie wavelength'},
+  {n:12, unit:3, effort:1, name:'Atoms',                                  topics:'Rutherford model, Bohr model, energy levels, radius and velocity'},
+  {n:13, unit:3, effort:1, name:'Nuclei',                                 topics:'Nuclear size, mass defect, binding energy, radioactivity'},
+  {n:14, unit:4, effort:2, name:'Semiconductor Electronics',              topics:'Energy bands, intrinsic and extrinsic semiconductors, p-n junction, diode applications'}
+];
+const EFFORT = {1:{label:'Quick', h:3}, 2:{label:'Medium', h:6}, 3:{label:'Long', h:10}};
+const LEVELS = ['I don’t know this chapter','I have heard of the concepts','I understand some concepts','I can solve basic questions','I can solve most board-level questions'];
+const GOALS = {40:{m:28, label:'40% Survival'}, 50:{m:35, label:'50% Improvement'}, 80:{m:56, label:'80%+ Excellence'}};
+const DIMS = [
+  ['C','Concept','rebuild the concept'],
+  ['F','Formula','drill the formulas'],
+  ['A','Application','practise numericals, direct ones first'],
+  ['P','Presentation','write full steps with diagram and units']
+];
+const QS = [
+  ['qa','Q1','Concept or definition','1 mark',[0,1]],
+  ['qb','Q2','Formula, graph or diagram','1 mark',[0,1]],
+  ['qc','Q3','Numerical or reasoning','3 marks',[0,1,2,3]]
+];
+const STATUS = [{k:'crit',label:'Critical'},{k:'weak',label:'Weak'},{k:'dev',label:'Developing'},{k:'strong',label:'Strong'},{k:'mast',label:'Mastered'}];
+const MIRROR = {
+  hs:{label:'Hidden strength',  cls:'m-hs'},
+  rel:{label:'Reliable strength',cls:'m-rel'},
+  gap:{label:'Genuine gap',      cls:'m-gap'},
+  over:{label:'Overestimates',   cls:'m-over'}
+};
+const PHASES = [
+  {name:'Phase 1 · Secure passing marks', target:'Target 28/70', items:['Repair basic concepts and formula recall.','Practise direct formula-based numericals.','Learn important definitions, graphs, diagrams and standard results.','Start with the weak chapters from the heavier units.','Re-test every repaired chapter.']},
+  {name:'Phase 2 · Build a 50% score', target:'Target 35/70', items:['Improve multi-step numericals.','Practise common previous-year question patterns.','Improve derivation writing and reasoning.','Introduce case-based and competency-based questions.','Start timed mixed-chapter tests.']},
+  {name:'Phase 3 · Push towards 80%', target:'Target 56/70 or higher', items:['Solve unfamiliar applications.','Practise difficult numericals and integrated concepts.','Improve accuracy and time management.','Complete full-length sample papers.','Analyse every lost mark and repeat the weak question types.']}
+];
+
+/* ---------- state ---------- */
+const KEY = 'cek-physics-readiness-v1';
+const blank = () => ({
+  name:'', phone:'', board:'CBSE', target:50, step:0, attemptId:'',
+  conf: CHAPTERS.map(() => null),
+  q: CHAPTERS.map(() => ({a:null, b:null, c:null})),
+  lost: CHAPTERS.map(() => ({C:false, F:false, A:false, P:false})),
+  effort: CHAPTERS.map(c => c.effort)
+});
+let state = blank();
+function valid(s){
+  return s && typeof s === 'object' &&
+    Array.isArray(s.conf) && s.conf.length === 14 &&
+    Array.isArray(s.q) && s.q.length === 14 && s.q.every(q => q && 'a' in q && 'b' in q && 'c' in q) &&
+    Array.isArray(s.lost) && s.lost.length === 14 && s.lost.every(l => l && typeof l === 'object') &&
+    Array.isArray(s.effort) && s.effort.length === 14;
+}
+function load(){
+  try {
+    const raw = localStorage.getItem(KEY);
+    if (!raw) return;
+    const s = JSON.parse(raw);
+    if (!valid(s)) return;
+    state = Object.assign(blank(), s);
+    if (!GOALS[state.target]) state.target = 50;
+    if (!(state.step >= 0 && state.step <= 3)) state.step = 0;
+    state.effort = state.effort.map((e, i) => EFFORT[e] ? e : CHAPTERS[i].effort);
+    if (typeof state.name !== 'string') state.name = '';
+    if (typeof state.phone !== 'string') state.phone = '';
+    if (typeof state.attemptId !== 'string') state.attemptId = '';
+  } catch (e) { state = blank(); }
+}
+function save(){ try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) {} }
+
+/* ---------- scoring ---------- */
+function chScore(i){
+  const q = state.q[i];
+  if (q.a !== null && q.b !== null && q.c !== null) return {v:q.a + q.b + q.c, tested:true};
+  const c = state.conf[i];
+  if (c !== null) return {v:c + 0.5, tested:false};
+  return null;
+}
+function bucket(v){
+  const f = Math.floor(v + 1e-9);
+  if (f <= 1) return 0;
+  if (f === 2) return 1;
+  if (f === 3) return 2;
+  if (f === 4) return 3;
+  return 4;
+}
+function levelOf(T){
+  if (T >= 56) return {label:'Excellence level (80%+)'};
+  if (T >= 35) return {label:'Improvement level (50%+)'};
+  if (T >= 28) return {label:'Survival level (40%+)'};
+  return {label:'Below survival level'};
+}
+function nextRung(T){
+  if (T < 28) return {m:28, label:'40% Survival'};
+  if (T < 35) return {m:35, label:'50% Improvement'};
+  if (T < 56) return {m:56, label:'80%+ Excellence'};
+  return null;
+}
+function mirrorOf(r){
+  if (r.conf === null || !r.s || !r.s.tested) return null;
+  const hiC = r.conf >= 3, hiM = r.s.v >= 3;
+  if (hiC) return hiM ? 'rel' : 'over';
+  return hiM ? 'hs' : 'gap';
+}
+function model(){
+  const rows = [];
+  let total = 0, covered = 0, tested = 0;
+  for (let i = 0; i < 14; i++){
+    const s = chScore(i);
+    rows.push({i:i, s:s, conf:state.conf[i]});
+    if (s){ covered++; total += s.v; if (s.tested) tested++; }
+  }
+  const T = Math.round(total);
+  const complete = covered === 14;
+  const cand = rows.filter(r => r.s && r.s.v < 4).map(r => {
+    const u = UNITS[CHAPTERS[r.i].unit];
+    const U = u.marks / u.count;
+    const H = EFFORT[state.effort[r.i]].h;
+    return {r:r, U:U, H:H, p:(5 - r.s.v) * U / H};
+  }).sort((a, b) => b.p - a.p || a.r.s.v - b.r.s.v || a.r.i - b.r.i);
+  const maintain = rows.filter(r => r.s && r.s.v >= 4);
+  const rung = complete ? nextRung(T) : null;
+  let path = null;
+  if (complete && rung){
+    const gap = rung.m - T;
+    let gain = 0, hours = 0;
+    const picks = [];
+    for (const x of cand){
+      if (gain >= gap) break;
+      gain += 4 - x.r.s.v;
+      hours += x.H;
+      picks.push(x);
+    }
+    path = {gap:gap, gain:gain, hours:hours, picks:picks, enough:gain >= gap};
+  }
+  const dims = DIMS.map(d => ({k:d[0], label:d[1], tip:d[2], n:state.lost.filter(l => l[d[0]]).length}));
+  return {rows:rows, total:total, T:T, covered:covered, tested:tested, complete:complete, cand:cand, maintain:maintain, rung:rung, path:path, dims:dims};
+}
+
+/* ---------- build steps 2 and 3 ---------- */
+function seg(kind, i, vals, aria, small){
+  let out = '<div class="seg' + (small ? ' sm' : '') + '" role="radiogroup" aria-label="' + aria + '">';
+  vals.forEach(v => {
+    const id = kind + '-' + i + '-' + v;
+    out += '<span class="seg-item"><input type="radio" name="' + kind + '-' + i + '" id="' + id + '" value="' + v + '" data-kind="' + kind + '" data-i="' + i + '"><label for="' + id + '">' + v + '</label></span>';
+  });
+  return out + '</div>';
+}
+function rateRow(c, i){
+  return '<div class="rate"><div><div class="name">' + c.n + '. ' + c.name + '</div><div class="topics">' + c.topics + '</div></div>'
+    + seg('conf', i, [0,1,2,3,4], 'Confidence in ' + c.name, false)
+    + '<div class="pick" id="pick-' + i + '" aria-live="polite"></div></div>';
+}
+function testCard(c, i){
+  let h = '<article class="tcard"><div class="tcard-head"><div><div class="num">Chapter ' + c.n + '</div><div class="name">' + c.name + '</div></div><div class="total" id="tot-' + i + '">–<small>/5</small></div></div>';
+  QS.forEach(q => {
+    h += '<div class="qrow"><div class="qlabel"><b>' + q[1] + '</b> ' + q[2] + '<span>' + q[3] + '</span></div>' + seg(q[0], i, q[4], q[1] + ' marks for ' + c.name, true) + '</div>';
+  });
+  h += '<fieldset class="flags"><legend>Marks lost in</legend>';
+  DIMS.forEach(d => {
+    const id = 'lost-' + i + '-' + d[0];
+    h += '<span class="flag"><input type="checkbox" id="' + id + '" data-kind="lost" data-i="' + i + '" data-k="' + d[0] + '"><label for="' + id + '">' + d[1] + '</label></span>';
+  });
+  return h + '</fieldset></article>';
+}
+function buildLists(){
+  let a = '', b = '';
+  UNITS.forEach((u, ui) => {
+    const head = '<div class="unit-head"><h3>' + u.name + '</h3><span class="w">Chapters ' + u.chapters + ' · ' + u.marks + ' of 70 marks</span></div>';
+    a += '<section class="unit">' + head;
+    b += '<section class="unit">' + head + '<div class="cards">';
+    CHAPTERS.forEach((c, i) => {
+      if (c.unit !== ui) return;
+      a += rateRow(c, i);
+      b += testCard(c, i);
+    });
+    a += '</section>';
+    b += '</div></section>';
+  });
+  $('#rate-list').innerHTML = a;
+  $('#test-list').innerHTML = b;
+}
+
+/* ---------- sync ---------- */
+function setRadio(kind, i, v){
+  document.querySelectorAll('input[name="' + kind + '-' + i + '"]').forEach(el => { el.checked = v !== null && +el.value === v; });
+}
+function syncLive(){
+  let rated = 0, sum = 0, marked = 0, tsum = 0;
+  for (let i = 0; i < 14; i++){
+    const c = state.conf[i], p = $('#pick-' + i);
+    if (p){
+      if (c === null){ p.textContent = 'Not rated yet'; p.classList.remove('on'); }
+      else { p.textContent = c + ' · ' + LEVELS[c]; p.classList.add('on'); }
+    }
+    if (c !== null){ rated++; sum += c; }
+    const q = state.q[i], t = $('#tot-' + i);
+    const done = q.a !== null && q.b !== null && q.c !== null;
+    if (t) t.innerHTML = (done ? (q.a + q.b + q.c) : '–') + '<small>/5</small>';
+    if (done){ marked++; tsum += q.a + q.b + q.c; }
+  }
+  $('#rated-count').textContent = rated + ' of 14 rated';
+  $('#rated-avg').textContent = rated ? 'Average ' + (sum / rated).toFixed(1) + ' of 4' : '';
+  $('#tested-count').textContent = marked + ' of 14 chapters marked';
+  $('#tested-sum').textContent = marked ? 'Total so far ' + tsum + ' of ' + (marked * 5) : '';
+}
+function applyState(){
+  $('#student-name').value = state.name || '';
+  $('#student-phone').value = state.phone || '';
+  document.querySelectorAll('input[data-kind="board"]').forEach(i => { i.checked = i.value === state.board; });
+  document.querySelectorAll('input[data-kind="target"]').forEach(i => { i.checked = +i.value === state.target; });
+  for (let i = 0; i < 14; i++){
+    setRadio('conf', i, state.conf[i]);
+    setRadio('qa', i, state.q[i].a);
+    setRadio('qb', i, state.q[i].b);
+    setRadio('qc', i, state.q[i].c);
+    DIMS.forEach(d => { const cb = document.getElementById('lost-' + i + '-' + d[0]); if (cb) cb.checked = !!state.lost[i][d[0]]; });
+  }
+  syncLive();
+  showStep(state.step, false);
+}
+function showStep(n, scroll){
+  state.step = n;
+  for (let i = 0; i < 4; i++) $('#step-' + i).hidden = i !== n;
+  document.querySelectorAll('.step-btn').forEach((b, i) => {
+    if (i === n) b.setAttribute('aria-current', 'step'); else b.removeAttribute('aria-current');
+  });
+  $('#progress-fill').style.width = ((n + 1) * 25) + '%';
+  if (n === 3) renderReport();
+  save();
+  if (scroll){ try { window.scrollTo(0, 0); } catch (e) {} }
+}
+
+/* ---------- report ---------- */
+function names(list){ return list.map(r => 'Ch ' + CHAPTERS[r.i].n).join(', '); }
+function renderReport(){
+  const m = model(), el = $('#report');
+  if (m.covered === 0){
+    el.innerHTML = '<div class="empty"><h3>No scores yet</h3><p class="muted">Rate the chapters in Step 2 or enter test marks in Step 3. The report fills in as you go.</p><div class="actions"><button type="button" class="btn btn-primary" data-go="1">Start self-rating</button></div></div>';
+    return;
+  }
+  const goal = GOALS[state.target];
+  const maxShown = m.complete ? 70 : m.covered * 5;
+  const pct = Math.round(m.total / maxShown * 100);
+  const kicker = m.tested === 14 ? 'Diagnostic score' : (m.complete ? 'Projected score' : 'So far');
+  const basis = m.complete
+    ? (m.tested === 14 ? 'From all 14 chapter tests.' : 'From ' + m.tested + ' chapter test' + (m.tested === 1 ? '' : 's') + ' and ' + (14 - m.tested) + ' self-rating' + (14 - m.tested === 1 ? '' : 's') + '. Test marks replace the estimates.')
+    : 'Partial: ' + m.covered + ' of 14 chapters scored.';
+  const lvl = m.complete ? levelOf(m.T).label : 'Score the other ' + (14 - m.covered) + ' chapters for the full picture';
+  const name = state.name.trim() || 'Student';
+
+  let h = '<p class="eyebrow">' + esc(name) + ' · ' + esc(state.board) + ' · ' + esc(today()) + '</p>';
+
+  // score card and ladder
+  let right = '';
+  if (m.complete){
+    const pos = v => v / 70 * 100;
+    const you = Math.min(96, Math.max(4, pos(m.T)));
+    let lad = '<div class="ladder"><div class="track"><div class="fill" style="width:' + pos(m.T) + '%"></div>';
+    [[28,'40%'],[35,'50%'],[56,'80%']].forEach(t => {
+      lad += '<span class="tick" style="left:' + pos(t[0]) + '%"></span><span class="tl' + (t[0] === goal.m ? ' goal' : '') + '" style="left:' + pos(t[0]) + '%"><b>' + t[1] + '</b><br>' + t[0] + '</span>';
+    });
+    lad += '<span class="you" style="left:' + you + '%">You: ' + m.T + '</span></div></div>';
+    const gl = m.T >= goal.m
+      ? 'You are at or above your goal of <b>' + goal.label + '</b> (' + goal.m + '/70).'
+      : 'Your goal: <b>' + goal.label + '</b>, ' + goal.m + '/70. ' + (goal.m - m.T) + ' marks to go.';
+    const nl = m.rung
+      ? 'Next milestone: <b>' + m.rung.label + '</b>, ' + m.rung.m + '/70. ' + (m.rung.m - m.T) + ' more marks.'
+      : 'Above 80%. Protect accuracy and time management.';
+    right = lad + '<div class="lines"><p>' + gl + '</p><p>' + nl + '</p></div>';
+    if (m.path){
+      let pt;
+      if (!m.path.picks.length){
+        pt = 'Every chapter is already at 4/5 or more. The remaining marks sit in Q1 and Q2 slips and in Q3 steps.';
+      } else {
+        const nm = m.path.picks.map(x => 'Ch ' + CHAPTERS[x.r.i].n + ' ' + CHAPTERS[x.r.i].name).join(', ');
+        pt = m.path.enough
+          ? 'Fastest route to ' + m.rung.label + ': bring ' + nm + ' up to 4/5. That adds about +' + fmt(m.path.gain) + ' marks in roughly ' + m.path.hours + ' hours.'
+          : 'Bringing every weak chapter up to 4/5 adds about +' + fmt(m.path.gain) + ' marks, still ' + fmt(m.path.gap - m.path.gain) + ' short of ' + m.rung.label + '. Also collect the 1-mark questions in every chapter.';
+      }
+      right += '<p class="pathline">' + esc(pt) + '</p>';
+    }
+  } else {
+    const missing = m.rows.filter(r => !r.s).map(r => 'Ch ' + CHAPTERS[r.i].n).join(', ');
+    right = '<p><b>Still to score:</b> ' + missing + '.</p><p class="muted">The target ladder and the plan appear once all 14 chapters have a self-rating or a test mark.</p>';
+  }
+  h += '<div class="scorecard"><div class="big"><span class="kicker">' + kicker + '</span><span class="num">' + m.T + '<span class="of">/' + maxShown + '</span></span><span class="lvl">' + pct + '% · ' + lvl + '</span><span class="basis">' + basis + '</span></div><div class="card">' + right + '</div></div>';
+
+  // confidence vs marks
+  const cells = {hs:[], rel:[], gap:[], over:[]};
+  m.rows.forEach(r => { const k = mirrorOf(r); if (k) cells[k].push(r); });
+  const anyMirror = cells.hs.length + cells.rel.length + cells.gap.length + cells.over.length > 0;
+  const cell = k => '<div class="mcell ' + MIRROR[k].cls + '"><b>' + MIRROR[k].label + '</b><span class="n">' + cells[k].length + '</span><span class="l">' + (cells[k].length ? names(cells[k]) : 'None') + '</span></div>';
+  h += '<div class="rsec"><h3>Confidence against marks</h3>';
+  if (anyMirror){
+    h += '<div class="matrix"><div class="axis"></div><div class="axis">Low confidence<small>rated 0 to 2</small></div><div class="axis">High confidence<small>rated 3 to 4</small></div>'
+      + '<div class="axis">High marks<small>3 to 5 of 5</small></div>' + cell('hs') + cell('rel')
+      + '<div class="axis">Low marks<small>0 to 2 of 5</small></div>' + cell('gap') + cell('over') + '</div>';
+  } else {
+    h += '<p class="muted">This needs both a self-rating and test marks for the same chapter.</p>';
+  }
+  h += '</div>';
+
+  // chapter table
+  const trs = m.rows.map(r => {
+    const c = CHAPTERS[r.i];
+    let status = '–', test = '–', read = '–';
+    if (r.s){
+      const b = bucket(r.s.v);
+      status = '<span class="pill s-' + STATUS[b].k + '">' + STATUS[b].label + '</span>';
+      test = r.s.tested ? r.s.v + '/5' : 'est. ' + fmt(r.s.v) + '/5';
+    }
+    const mk = mirrorOf(r);
+    if (mk) read = MIRROR[mk].label;
+    return '<tr><td>' + c.n + '. ' + c.name + '</td><td class="num">' + (r.conf === null ? '–' : r.conf + '/4') + '</td><td class="num">' + test + '</td><td>' + status + '</td><td>' + read + '</td></tr>';
+  }).join('');
+  h += '<div class="rsec"><h3>Chapter by chapter</h3><div class="tablewrap"><table><thead><tr><th>Chapter</th><th>Self-rating</th><th>Test</th><th>Status</th><th>Reading</th></tr></thead><tbody>' + trs + '</tbody></table></div><p class="note">0 to 1 Critical · 2 Weak · 3 Developing · 4 Strong · 5 Mastered. Self-rating estimates are a starting point and are replaced by test marks.</p></div>';
+
+  // where marks are lost
+  const flagTotal = m.dims.reduce((a, d) => a + d.n, 0);
+  h += '<div class="rsec"><h3>Where marks are lost</h3>';
+  if (flagTotal){
+    const top = m.dims.slice().sort((a, b) => b.n - a.n)[0];
+    h += m.dims.map(d => '<div class="dim"><span>' + d.label + '</span><div class="bar"><span style="width:' + (d.n / 14 * 100) + '%"></span></div><span class="cnt">' + d.n + ' chapter' + (d.n === 1 ? '' : 's') + '</span></div>').join('');
+    h += '<p>Most marks go in <b>' + top.label + '</b>. Next step: ' + top.tip + '.</p>';
+  } else {
+    h += '<p class="muted">Tap Concept, Formula, Application or Presentation on each test card in Step 3 to see which skill is costing marks.</p>';
+  }
+  h += '</div>';
+
+  // priorities
+  const prioRow = x => {
+    const i = x.r.i, c = CHAPTERS[i], v = x.r.s.v, b = bucket(v);
+    const flagged = DIMS.filter(d => state.lost[i][d[0]]).map(d => d[2]);
+    const focus = flagged.length ? 'Focus: ' + flagged.join(', ') + '.' : 'Focus: basic concept first, then direct numericals.';
+    const opts = [1,2,3].map(k => '<option value="' + k + '"' + (state.effort[i] === k ? ' selected' : '') + '>' + EFFORT[k].label + ' · ' + EFFORT[k].h + ' h</option>').join('');
+    return '<div class="prio"><div><div class="pname"><b>Ch ' + c.n + ' · ' + c.name + '</b><span class="pill s-' + STATUS[b].k + '">' + fmt(v) + '/5</span></div><div class="focus">' + focus + '</div></div>'
+      + '<div class="meta"><span>+' + fmt(4 - v) + ' marks to reach 4/5</span><label class="sr-only" for="effort-' + i + '">Repair time for ' + c.name + '</label><select id="effort-' + i + '" data-kind="effort" data-i="' + i + '">' + opts + '</select></div></div>';
+  };
+  const tier = (title, items) => items.length ? '<div class="tier"><h4>' + title + '</h4>' + items.join('') + '</div>' : '';
+  h += '<div class="rsec"><h3>What to teach first</h3><p class="muted">Ranked by weakness times unit weight, divided by repair time, so the quickest marks come first. Change a repair time if you know the chapter takes longer for this student.</p>';
+  if (m.cand.length){
+    h += tier('Immediate attention', m.cand.slice(0, 2).map(prioRow));
+    h += tier('Second priority', m.cand.slice(2, 6).map(prioRow));
+    if (m.cand.length > 6) h += '<p class="tiertext"><b>Later:</b> ' + m.cand.slice(6).map(x => 'Ch ' + CHAPTERS[x.r.i].n + ' ' + CHAPTERS[x.r.i].name).join(', ') + '.</p>';
+  } else {
+    h += '<p>No chapter is below 4/5.</p>';
+  }
+  if (m.maintain.length) h += '<p class="tiertext"><b>Maintain strengths:</b> ' + m.maintain.map(r => 'Ch ' + CHAPTERS[r.i].n + ' ' + CHAPTERS[r.i].name).join(', ') + '. A 10-minute recap each week is enough.</p>';
+  h += '<p class="tiertext"><b>Next action:</b> re-test each repaired chapter with a fresh 5-mark test, then update Step 3.</p></div>';
+
+  // phase
+  if (m.complete){
+    const ph = PHASES[m.T < 28 ? 0 : (m.T < 35 ? 1 : 2)];
+    h += '<div class="rsec"><h3>Study phase</h3><div class="phase"><div><b>' + ph.name + '</b> <span class="muted">· ' + ph.target + '</span></div><ul>' + ph.items.map(t => '<li>' + t + '</li>').join('') + '</ul>'
+      + (m.T >= 28 ? '<p class="note">Aim practice at the exact mistakes holding marks back. Repeating easy questions will not move the score.</p>' : '')
+      + '</div></div>';
+  }
+  el.innerHTML = h;
+}
+
+/* ---------- sharing ---------- */
+function selfText(){
+  const name = state.name.trim() || 'Student', g = GOALS[state.target];
+  const L = ['CeK Physics self-rating, Class 12', 'Student: ' + name + ' (' + state.board + ')', 'Goal: ' + g.label + ' (' + g.m + '/70)', 'Scale: 0 = I don’t know it, 4 = I can solve most board questions', ''];
+  CHAPTERS.forEach((c, i) => L.push(c.n + '. ' + c.name + ': ' + (state.conf[i] === null ? 'not rated' : state.conf[i] + '/4')));
+  const rated = state.conf.filter(c => c !== null);
+  if (rated.length) L.push('', 'Average: ' + (rated.reduce((a, b) => a + b, 0) / rated.length).toFixed(1) + '/4');
+  return L.join('\n');
+}
+function reportText(m){
+  const name = state.name.trim() || 'Student', g = GOALS[state.target];
+  if (!m.covered) return 'CeK Physics Readiness Assessment, Class 12\nStudent: ' + name + '\nNo scores yet.';
+  const max = m.complete ? 70 : m.covered * 5;
+  const L = ['CeK Physics Readiness Assessment, Class 12', 'Student: ' + name + ' (' + state.board + ')', 'Date: ' + today(), '',
+    'Score: ' + m.T + '/' + max + ' (' + Math.round(m.total / max * 100) + '%)' + (m.complete ? ', ' + levelOf(m.T).label : ''),
+    'Goal: ' + g.label + ' (' + g.m + '/70)'];
+  if (m.rung) L.push('Next milestone: ' + m.rung.label + ' (' + m.rung.m + '/70), ' + (m.rung.m - m.T) + ' more marks');
+  if (m.cand.length){
+    L.push('', 'Work on first:');
+    m.cand.slice(0, 6).forEach((x, k) => L.push((k + 1) + '. ' + CHAPTERS[x.r.i].name + ' (' + fmt(x.r.s.v) + '/5)'));
+  }
+  if (m.maintain.length) L.push('', 'Keep sharp: ' + m.maintain.map(r => CHAPTERS[r.i].name).join(', '));
+  const top = m.dims.slice().sort((a, b) => b.n - a.n)[0];
+  if (top && top.n > 0) L.push('', 'Most marks lost in: ' + top.label + ' (' + top.n + ' chapters)');
+  return L.join('\n');
+}
+let toastTimer;
+function toast(msg){
+  $('#toast').textContent = msg;
+  $('#toast-wrap').hidden = false;
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => { $('#toast-wrap').hidden = true; }, 2600);
+}
+function showCopyBox(text){
+  const box = $('#copybox'), ta = $('#copy-text');
+  ta.value = text;
+  box.hidden = false;
+  try { ta.focus(); ta.select(); box.scrollIntoView({block:'center'}); } catch (e) {}
+}
+function copyText(text){
+  const fail = () => showCopyBox(text);
+  try {
+    if (navigator.clipboard && navigator.clipboard.writeText){
+      navigator.clipboard.writeText(text).then(() => toast('Copied. Paste it into WhatsApp.'), fail);
+      return;
+    }
+  } catch (e) {}
+  fail();
+}
+
+/* ---------- save to sheet ---------- */
+function newId(){ return 'A' + Date.now().toString(36) + Math.random().toString(36).slice(2, 7); }
+async function saveToSheet(){
+  const st = $('#save-status'), btn = $('#save-report');
+  const m = model();
+  if (!m.covered){ st.textContent = 'Nothing to save yet. Add self-ratings or test marks first.'; return; }
+  if (!state.name.trim()){ st.textContent = 'Add the student name in Step 1 first.'; return; }
+  if (!CONFIG.SCRIPT_URL || CONFIG.SCRIPT_URL.indexOf('PASTE') === 0){ st.textContent = 'Saving is not set up yet. Add the web app URL in the page settings.'; return; }
+  if (!state.attemptId){ state.attemptId = newId(); save(); }
+  const max = m.complete ? 70 : m.covered * 5;
+  const payload = {
+    key: CONFIG.KEY,
+    attemptId: state.attemptId,
+    name: state.name.trim(),
+    phone: state.phone.trim(),
+    board: state.board,
+    target: state.target,
+    score: m.T,
+    outOf: max,
+    complete: m.complete,
+    tested: m.tested,
+    level: m.complete ? levelOf(m.T).label : 'Partial',
+    conf: state.conf,
+    marks: state.q.map(q => (q.a !== null && q.b !== null && q.c !== null) ? q.a + q.b + q.c : null),
+    lost: DIMS.map(d => state.lost.filter(l => l[d[0]]).length),
+    priority: m.cand.slice(0, 6).map(x => CHAPTERS[x.r.i].n)
+  };
+  btn.disabled = true;
+  st.textContent = 'Saving…';
+  try {
+    const res = await fetch(CONFIG.SCRIPT_URL, {method:'POST', body:JSON.stringify(payload)});
+    const j = await res.json();
+    if (j && j.ok){ st.textContent = 'Saved to the CeK sheet at ' + new Date().toLocaleTimeString('en-IN', {hour:'numeric', minute:'2-digit'}) + '.'; toast('Saved.'); }
+    else { st.textContent = 'Not saved: ' + ((j && j.error) || 'unknown error') + '.'; }
+  } catch (e) {
+    st.textContent = 'Could not reach the sheet. Check the internet and tap Save again, or use Copy report.';
+  }
+  btn.disabled = false;
+}
+
+/* ---------- events ---------- */
+const app = $('#app');
+app.addEventListener('input', e => {
+  if (e.target.id === 'student-name'){ state.name = e.target.value; save(); }
+  if (e.target.id === 'student-phone'){ state.phone = e.target.value; save(); }
+});
+app.addEventListener('change', e => {
+  const t = e.target, kind = t.dataset && t.dataset.kind;
+  if (!kind) return;
+  const i = +t.dataset.i;
+  switch (kind){
+    case 'board':  state.board = t.value; break;
+    case 'target': state.target = +t.value; break;
+    case 'conf':   state.conf[i] = +t.value; break;
+    case 'qa':     state.q[i].a = +t.value; break;
+    case 'qb':     state.q[i].b = +t.value; break;
+    case 'qc':     state.q[i].c = +t.value; break;
+    case 'lost':   state.lost[i][t.dataset.k] = t.checked; break;
+    case 'effort': state.effort[i] = +t.value; save(); renderReport(); return;
+    default: return;
+  }
+  save();
+  syncLive();
+});
+app.addEventListener('click', e => {
+  const go = e.target.closest('[data-go]');
+  if (go){ showStep(+go.dataset.go, true); return; }
+  if (e.target.closest('#copy-self')){ copyText(selfText()); return; }
+  if (e.target.closest('#save-report')){ saveToSheet(); return; }
+  if (e.target.closest('#copy-report')){
+    const m = model();
+    if (!m.covered){ toast('Nothing to share yet.'); return; }
+    copyText(reportText(m));
+    return;
+  }
+  if (e.target.closest('#copy-close')){ $('#copybox').hidden = true; return; }
+  const wa = e.target.closest('#wa-self, #wa-report');
+  if (wa){
+    const text = wa.id === 'wa-self' ? selfText() : reportText(model());
+    wa.href = 'https://wa.me/?text=' + encodeURIComponent(text);
+  }
+});
+let resetArmed = false, resetTimer;
+$('#reset-btn').addEventListener('click', () => {
+  const b = $('#reset-btn');
+  if (!resetArmed){
+    resetArmed = true;
+    b.textContent = 'Tap again to clear';
+    resetTimer = setTimeout(() => { resetArmed = false; b.textContent = 'New student'; }, 4000);
+    return;
+  }
+  clearTimeout(resetTimer);
+  resetArmed = false;
+  b.textContent = 'New student';
+  state = blank();
+  save();
+  applyState();
+  $('#save-status').textContent = '';
+  try { window.scrollTo(0, 0); } catch (e) {}
+  toast('Cleared. Ready for the next student.');
+});
+
+load();
+buildLists();
+applyState();
+})();
+</script>
+</body>
+</html>
